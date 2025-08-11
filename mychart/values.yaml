@@ -8,3 +8,7 @@ details:
   # country: us
   nation: uk
   color: pink
+
+demos:
+  regex:
+    enabled: true

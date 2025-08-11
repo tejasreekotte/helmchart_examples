@@ -1,0 +1,40 @@
+{{- if .Values.demos.regex.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-regex
+data:
+  # 1) Match (bool)
+  regex_match_email: {{ regexMatch "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$" "user@example.com" | quote }}
+  regex_match_ci_name: {{ regexMatch "(?i)^teju$" .Values.details.name | quote }}
+
+  # 2) Find first match (string)
+  regex_find_digits: {{ "abc123def456" | regexFind "\\d+" | quote }}
+
+  # 3) Find all matches (list)  ← fixed ordering
+  regex_findall_digits: |
+    {{- regexFindAll "\\d+" "a1 b22 c333" -1 | toYaml | nindent 4 -}}
+  regex_findall_words_limit2: |
+    {{- regexFindAll "\\w+" "one two three four" 2 | toYaml | nindent 4 -}}
+
+  # 4) Split by regex (list)    ← fixed ordering
+  regex_split_commas: |
+    {{- regexSplit "," "a,b,c" -1 | toYaml | nindent 4 -}}
+  regex_split_whitespace: |
+    {{- regexSplit "\\s+" "one  two\tthree" -1 | toYaml | nindent 4 -}}
+
+  # 5) Replace (OK with pipeline; string is last arg)
+  regex_replace_hide_digits: {{ "acc-1234-xyz" | regexReplaceAll "\\d" "X" | quote }}
+  regex_replace_groups:     {{ "host123" | regexReplaceAll "(host)(\\d+)" "$1-node-$2" | quote }}
+
+  # 6) Literal replace (OK with pipeline)
+  regex_replace_literal:    {{ "host123" | regexReplaceAllLiteral "(\\d+)" "[$1]" | quote }}
+
+  # 7) MUST variants (same ordering rule)
+  must_find_first_number:   {{ "abc123" | mustRegexFind "(\\d+)" | quote }}
+  must_findall_two_words: |
+    {{- mustRegexFindAll "\\w+" "alpha beta gamma" 2 | toYaml | nindent 4 -}}
+
+  # 8) Practical demo
+  city_two_letters: {{ ternary (regexFind "^[A-Za-z]{2}" .Values.details.city) "NA" (regexMatch "^[A-Za-z]{2}" .Values.details.city) | quote }}
+{{- end }}
