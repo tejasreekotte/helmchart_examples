@@ -117,5 +117,3 @@ data:
   musttorawjson_demo: {{ .Values.details | mustToRawJson | quote }} # Same as toRawJson but errors if it can’t convert.
 
 
-  person_name: {{ $person.name }}
-
