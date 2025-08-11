@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  myvalue: "Hello World"
+  drink: {{ .Values.favorite.drink | default "tea" | quote }}
+  food: {{ .Values.favorite.food | upper | quote }}
+  {{- if eq .Values.favorite.drink "coffee" }}
+  mug: "true"
+  {{- end }}
+  # use with for defining variable scopes
+  {{- with .Values.favorite }} this complete block executes only if this value is not empty
+  drink: {{ .drink | quote }}
+  food: {{ .food | quote }}
+  {{- end}}
+  release: {{ .Release.Name }} # you can access like this but if we include this inside with like the same way it will fail
+  # to include variables out of scopes
+  {{- with .Values.favorite }}
+  release: {{ $.Release.Name }}
+  {{- end }}
+  # loop using range
+  toppings: |-
+    {{- range $.Values.pizzaToppings }}
+    - {{ . | title | quote }}
+    {{- end }}

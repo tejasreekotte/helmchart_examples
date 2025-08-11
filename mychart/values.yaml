@@ -12,3 +12,13 @@ details:
 demos:
   regex:
     enabled: true
+
+favorite:
+    drink: coffee
+    food: a
+pizzaToppings:
+  - mushrooms
+  - cheese
+  - peppers
+  - onions
+  - pineapple
