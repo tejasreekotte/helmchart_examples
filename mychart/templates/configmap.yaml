@@ -1,0 +1,44 @@
+{{- /* Load yaml files */ -}}
+{{- $personY := .Files.Get "files/yamls/person.yaml" | fromYaml -}}
+{{- $personJ := .Files.Get "files/jsons/person.json" | fromJson -}}
+{{- $peopleY := .Files.Get "files/yamls/people.yaml" | fromYamlArray -}}
+{{- $peopleJ := .Files.Get "files/jsons/people.json" | fromJsonArray -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+    person_y_name: {{ $personY.name | default "unknown" | quote }}
+    person_y_greeting: |
+        {{- if $personY }}
+        My age is {{ $personY.age }}
+        {{- end }}
+    personJ_name: {{ $personJ.name | default "unknown" | quote }}
+    personJ_greeting: |
+        {{- if $personJ }}
+        {{ printf "My name is %s and my age is %v" $personJ.name $personJ.age }}
+        {{- end }}
+    yaml_people_greetings: |
+        {{- if $peopleY -}}
+        {{- range $p := $peopleY }}
+        Hi, my name is {{ $p.name }} and I am {{ $p.age }} years old.
+        {{- end }}
+        {{- else -}}
+        file yamls/people.yml not found or empty
+        {{- end }}
+    yaml_people_names: |
+        {{- if $peopleY }}
+        {{- range $p := $peopleY }}
+        My name is {{ $p.name }}
+        {{- end }}
+        {{- else -}}
+        File is not found
+        {{- end }}
+    peopleJ_names: |
+        {{- if $peopleJ }}
+        {{- range $pj := $peopleJ }}
+        My name is {{ $pj.name }}
+        {{- end }}
+        {{- else }}
+        File not found
+        {{- end }} 

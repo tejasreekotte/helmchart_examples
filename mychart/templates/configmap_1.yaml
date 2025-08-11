@@ -1,0 +1,121 @@
+{{- /* ---- Preflight validations ---- */ -}}
+{{- $age := required "You must set details.age (number)" .Values.details.age | int -}}
+{{- if lt $age 0 -}}
+{{- fail (printf "Age cannot be negative") -}}
+{{- end -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  value1: {{ .Values.details.name | quote }} # using pipeline style(mostly used)
+  valuex: {{ quote .Values.details.name }} #using direct functions
+  value2: {{ .Values.details.gender | repeat 5 | quote }}
+  value3: {{ $age }}
+  value4: {{ .Values.details.city | upper | quote }}
+  # Flow control and logical operators
+  value5: {{ .Values.details.drink | default "tea" | quote }}
+  value6: {{ coalesce .Values.details.country .Values.details.nation "india" | quote }}
+  value7: {{ if empty .Values.details.place }}unknown{{ else }}{{ .Values.details.place | quote }}{{ end }}
+  value8: {{ required "You must set details.name" .Values.details.name | quote }} # helm install fails if not set
+  value9: {{ .Values.details.field }} # empty if not set
+  value10: {{ if eq .Values.details.gender "f"}}female{{ else }}unknown{{ end }}
+  value11: {{ if gt $age 18 }}adult{{ else }}minor{{ end }}
+  value12: {{ if and (eq .Values.details.name "teju") (eq .Values.details.gender "f") }}true{{ else }}false{{ end }}
+  value13: {{ if or (eq .Values.details.color "blue") (eq .Values.details.drink "coffee") }}true{{ else }}false{{ end }}
+  value14: {{ if not (eq .Values.details.gender "male") }}not male{{ end }}
+  value15: {{ ternary "adult" "minor" (gt (int .Values.details.age) 18) }}
+  value16: {{ ternary "female" "unknown" (eq .Values.details.gender "f") }}
+
+  # String functions
+  ### 1. Casing using direct functions
+  value_case1: {{ lower "HELLO" }}
+  value_case2: {{ upper "hello" }}
+  value_case3: {{ title "hello world" }}
+  value_case4: {{ swapcase "HelLo" }}      # hELlO
+  value_case5: {{ untitle "Hello World" }} # hello World
+  value_case6: {{ camelcase "hello_world" }} # helloWorld
+  value_case7: {{ kebabcase "Hello World" }} # hello-world
+  value_case8: {{ snakecase "Hello World" }} # hello_world
+  ### 1) Casing (pipeline-friendly)
+  case_lower:      {{ "HELLO"        | lower }}
+  case_upper:      {{ "hello"        | upper }}
+  case_title:      {{ "hello world"  | title }}
+  case_swap:       {{ "HelLo"        | swapcase }}
+  case_untitle:    {{ "Hello World"  | untitle }}
+  case_camel:      {{ "hello_world"  | camelcase }}
+  case_kebab:      {{ "Hello World"  | kebabcase }}
+  case_snake:      {{ "Hello World"  | snakecase }}
+
+  ### 2) Trimming / spacing
+  trim_basic: {{ "   hello  " | trim }}
+  trim_all: {{ "---hello---" | trimAll "-" }}
+  trim_prefix: {{ "pre-fix" | trimPrefix "pre-" }}
+  trim_suffix: {{ "the-end" | trimSuffix "-end" }}
+  no_space: {{ "a b  c" | nospace }}
+
+  ### 3. Concatenation & Printing
+  value_cat: {{ cat "Hello" "World" }}
+  value_print: {{ print "Age:" .Values.details.age }}
+  value_printf: {{ printf "%s-tea" .Values.details.name }}
+  value_println: {{ println "Hello" "World" }}
+
+  ### 4. Abbreviation
+  value_abbrev: {{ abbrev 5 "abcdefghijkl" }}              # abcde...
+  value_abbrevboth: {{ abbrevboth 5 5 "abcdefghijk" }}      # abc...hijk
+
+  ### 5. Random strings
+  value_randAlpha: {{ randAlpha 5 }}
+  value_randAlphaNum: {{ randAlphaNum 5 }}
+  value_randAscii: {{ randAscii 5 }}
+  value_randNumeric: {{ randNumeric 5 }}
+
+  ### 6) Substring / replace / trunc
+  substr_val: {{ "012345678" | substr 0 5 }}
+  replace_char: {{ "helloworld" | replace "o" "a" }}
+  replace_word: {{ "i like tea" | replace "tea" "coffee" }}
+  trunc_val: {{ "helloworld" | trunc 5 }}
+
+  ### 7) Contains / prefix / suffix checks
+  contains_ell: {{ "hello" | contains "ell" }}
+  has_prefix_he: {{ "hello" | hasPrefix "he" }}
+  has_suffix_lo: {{ "hello" | hasSuffix "lo" }}
+
+  ### 8) Repeat / shuffle / wrap
+  repeat_ex: {{ "h" | repeat 5 }}
+  shuff_ex: {{ "hello" | shuffle }}
+  wrap_ex: {{ "hello12345" | wrap 5 }}
+
+  ### 10) Misc: cat/print/println/squote/quote/initials/abbrev helpers via pipes
+  cat_demo:        {{ "World"                 | cat "Hello " }}      # "Hello World"
+  println_demo:    {{ "Hello"                 | println " World" }}  # adds newline
+  squote_name:     {{ .Values.details.name    | squote }}            # 'teju'
+  quote_city:      {{ .Values.details.city    | upper | quote }}     # "CTR"
+  initials_demo:   {{ "Jane Ann Doe"          | initials }}          # JAD
+
+  
+### Type conversion functions
+  produce_a_list: {{ list 1 2 3 4 5 }}
+  list_toStrings_demo: {{ list 1 2 3 | toStrings | quote }}
+  toString_ex: {{ 1 | toStrings }}
+  todecimal_ex: {{ "0777" | toDecimal }}
+
+  ### JSON encoding examples
+  tojson_demo: {{ .Values.details | toJson | quote }} # returns empty string if it can't convert
+
+  musttojson_demo: {{ .Values.details | mustToJson | quote }} #  errors if it cant convert
+
+  toprettyjson_demo: |
+    {{- .Values.details | toPrettyJson | nindent 4 -}} # Returns indented (pretty-printed) JSON string.
+
+  musttoprettyjson_demo: |
+    {{- .Values.details | mustToPrettyJson | nindent 4 -}} # Same as toPrettyJson but errors if it can’t convert.
+
+  torawjson_demo: {{ .Values.details | toRawJson | quote }} # Returns JSON without escaping HTML characters like < or &.
+
+  musttorawjson_demo: {{ .Values.details | mustToRawJson | quote }} # Same as toRawJson but errors if it can’t convert.
+
+
+  person_name: {{ $person.name }}
+

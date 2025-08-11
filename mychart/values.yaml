@@ -1,0 +1,10 @@
+details: 
+  place: tpt
+  name: teju
+  age: 27
+  gender: f
+  city: ctr
+  drink: coffee
+  # country: us
+  nation: uk
+  color: pink
