@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  labels:
+    {{- include "mychart.labels" . | nindent 4 }}
+data:
+  myvalue: "Hello World"
+{{- range $key, $val := .Values.favorite }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+  # app info (demonstrates reusing a named template in another section)
+  {{- include "mychart.app" . | nindent 2 }}
+
+# --- Optional demo of the `template` action (not used above) ---
+# This style requires a helper that already contains "labels:" (see mychart.labelsBlock),
+# and it cannot be piped, so indentation must be managed by the helper itself.
+#
+# metadata:
+#   name: {{ .Release.Name }}-configmap
+#   {{- template "mychart.labelsBlock" . }}
